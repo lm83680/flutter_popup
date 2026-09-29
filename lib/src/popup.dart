@@ -219,9 +219,12 @@ class _PopupRoute extends PopupRoute<void> {
   final BoxDecoration? contentDecoration;
 
   // `_viewportRect` is now an instance getter and cannot be read in a field
-  // initializer. `_calculateChildOffset` always recomputes this before the
-  // route is shown (see `didPush`), so a conservative initial value is enough.
-  double _maxHeight = 0;
+  // initializer, so fall back to the raw view height. This value constrains
+  // the first (offstage) layout from which the popup's size is measured —
+  // initializing it to 0 would squash the content to zero height, and
+  // `_calculateChildOffset` would then permanently keep `_maxHeight` at 0.
+  // `didPush` recomputes the correct value before the route is shown.
+  double _maxHeight = Screen.height;
   _ArrowDirection _arrowDirection = _ArrowDirection.top;
   double _arrowHorizontal = 0;
   double _scaleAlignDx = 0.5;
