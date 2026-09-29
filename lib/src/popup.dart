@@ -197,7 +197,11 @@ class _PopupRoute extends PopupRoute<void> {
   final Curve animationCurve;
 
   static const double _margin = 10;
-  static final Rect _viewportRect = Rect.fromLTWH(
+  // FIX: was `static final`, initialized once with the screen metrics at the
+  // first popup and never updated. After an orientation change the overflow
+  // checks in `_calculateChildOffset` used the stale viewport, pinning the
+  // popup to the wrong edge. Now computed live on every read.
+  Rect get _viewportRect => Rect.fromLTWH(
     _margin,
     Screen.statusBar + _margin,
     Screen.width - _margin * 2,
@@ -214,7 +218,10 @@ class _PopupRoute extends PopupRoute<void> {
   final double? contentRadius;
   final BoxDecoration? contentDecoration;
 
-  double _maxHeight = _viewportRect.height;
+  // `_viewportRect` is now an instance getter and cannot be read in a field
+  // initializer. `_calculateChildOffset` always recomputes this before the
+  // route is shown (see `didPush`), so a conservative initial value is enough.
+  double _maxHeight = 0;
   _ArrowDirection _arrowDirection = _ArrowDirection.top;
   double _arrowHorizontal = 0;
   double _scaleAlignDx = 0.5;
